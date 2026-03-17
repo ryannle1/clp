@@ -1,6 +1,9 @@
 {
   "name": "clp-marketplace",
-  "owner": { "name": "CLP Contributors" },
+  "owner": {
+    "name": "Tri Le",
+    "url": "https://github.com/ryannle1"
+  },
   "metadata": {
     "description": "Context Lifecycle Protocol plugin marketplace",
     "version": "1.0.0"

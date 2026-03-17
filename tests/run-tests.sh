@@ -97,17 +97,26 @@ if command -v jq &>/dev/null; then
   PLUGIN_NAME=$(jq -r '.name' "$REPO_ROOT/.claude-plugin/plugin.json" 2>/dev/null)
   [ "$PLUGIN_NAME" = "clp" ] && pass "Plugin name is 'clp'" || fail "Plugin name is '$PLUGIN_NAME', expected 'clp'"
 
-  SKILL_COUNT=$(jq '.skills | length' "$REPO_ROOT/.claude-plugin/plugin.json" 2>/dev/null)
-  [ "$SKILL_COUNT" -ge 7 ] && pass "Plugin declares $SKILL_COUNT skills (≥7)" || fail "Plugin declares only $SKILL_COUNT skills (need ≥7)"
+  # Verify auto-discovered skills exist on disk
+  SKILL_COUNT=$(find "$REPO_ROOT/skills" -name "SKILL.md" 2>/dev/null | wc -l | tr -d ' ')
+  [ "$SKILL_COUNT" -ge 7 ] && pass "Found $SKILL_COUNT skills via auto-discovery (≥7)" || fail "Found only $SKILL_COUNT skills (need ≥7)"
 
-  HOOK_COUNT=$(jq '.hooks | keys | length' "$REPO_ROOT/.claude-plugin/plugin.json" 2>/dev/null)
-  [ "$HOOK_COUNT" -ge 4 ] && pass "Plugin declares $HOOK_COUNT hook events (≥4)" || fail "Plugin declares only $HOOK_COUNT hook events (need ≥4)"
+  # Verify hooks.json exists and has required events
+  HOOKS_PATH=$(jq -r '.hooks // empty' "$REPO_ROOT/.claude-plugin/plugin.json" 2>/dev/null)
+  if [ -n "$HOOKS_PATH" ]; then
+    HOOKS_FILE="$REPO_ROOT/${HOOKS_PATH#./}"
+    [ -f "$HOOKS_FILE" ] && pass "hooks config file exists at $HOOKS_PATH" || fail "hooks config file missing at $HOOKS_PATH"
+    if [ -f "$HOOKS_FILE" ]; then
+      HOOK_COUNT=$(jq 'keys | length' "$HOOKS_FILE" 2>/dev/null)
+      [ "$HOOK_COUNT" -ge 4 ] && pass "Hooks config declares $HOOK_COUNT hook events (≥4)" || fail "Hooks config declares only $HOOK_COUNT hook events (need ≥4)"
+    fi
+  fi
 
-  # Verify all declared skills exist on disk
-  info "Checking declared skills exist on disk..."
-  while IFS= read -r skill_path; do
-    [ -f "$REPO_ROOT/$skill_path/SKILL.md" ] && pass "$skill_path/SKILL.md exists" || fail "$skill_path/SKILL.md missing (declared in plugin.json)"
-  done < <(jq -r '.skills[]' "$REPO_ROOT/.claude-plugin/plugin.json")
+  info "Checking auto-discovered skills exist on disk..."
+  for skill_dir in "$REPO_ROOT"/skills/*/; do
+    skill_name=$(basename "$skill_dir")
+    [ -f "$skill_dir/SKILL.md" ] && pass "skills/$skill_name/SKILL.md exists" || fail "skills/$skill_name/SKILL.md missing"
+  done
 fi
 
 section "3. Skill Validation"
@@ -118,16 +127,16 @@ done
 
 section "4. Hook Scripts"
 for hook in clp-session-start clp-prompt-scan clp-pre-compact clp-session-end; do
-  assert_file_exists "hooks/$hook.sh"
-  assert_executable "hooks/$hook.sh"
+  assert_file_exists "hooks/scripts/$hook.sh"
+  assert_executable "hooks/scripts/$hook.sh"
 
   # Check shebang
-  head -1 "$REPO_ROOT/hooks/$hook.sh" | grep -q "#!/usr/bin/env bash" && \
-    pass "hooks/$hook.sh has bash shebang" || fail "hooks/$hook.sh missing shebang"
+  head -1 "$REPO_ROOT/hooks/scripts/$hook.sh" | grep -q "#!/usr/bin/env bash" && \
+    pass "hooks/scripts/$hook.sh has bash shebang" || fail "hooks/scripts/$hook.sh missing shebang"
 
   # Check set -euo pipefail
-  grep -q "set -euo pipefail" "$REPO_ROOT/hooks/$hook.sh" && \
-    pass "hooks/$hook.sh uses strict mode" || fail "hooks/$hook.sh missing strict mode"
+  grep -q "set -euo pipefail" "$REPO_ROOT/hooks/scripts/$hook.sh" && \
+    pass "hooks/scripts/$hook.sh uses strict mode" || fail "hooks/scripts/$hook.sh missing strict mode"
 done
 
 section "5. Rules"
@@ -166,20 +175,20 @@ REGISTRY
   export CLAUDE_PROJECT_DIR="$TEMP_DIR"
 
   info "Testing SessionStart hook..."
-  SS_OUT=$(echo '{"source":"startup","session_id":"test-ss"}' | bash "$REPO_ROOT/hooks/clp-session-start.sh" 2>/dev/null || echo "ERROR")
+  SS_OUT=$(echo '{"source":"startup","session_id":"test-ss"}' | bash "$REPO_ROOT/hooks/scripts/clp-session-start.sh" 2>/dev/null || echo "ERROR")
   echo "$SS_OUT" | jq -e '.hookSpecificOutput' &>/dev/null && pass "SessionStart returns valid hookSpecificOutput" || fail "SessionStart output invalid"
   echo "$SS_OUT" | grep -qi "CLP" && pass "SessionStart mentions CLP" || fail "SessionStart missing CLP context"
 
   info "Testing PromptScan hook (should match)..."
-  PS_MATCH=$(echo '{"user_message":"Add OAuth login flow"}' | bash "$REPO_ROOT/hooks/clp-prompt-scan.sh" 2>/dev/null || echo "")
+  PS_MATCH=$(echo '{"user_message":"Add OAuth login flow"}' | bash "$REPO_ROOT/hooks/scripts/clp-prompt-scan.sh" 2>/dev/null || echo "")
   echo "$PS_MATCH" | grep -qi "auth" && pass "PromptScan matches 'auth' skill on 'OAuth'" || fail "PromptScan failed to match auth skill"
 
   info "Testing PromptScan hook (should not match)..."
-  PS_NONE=$(echo '{"user_message":"Hello world"}' | bash "$REPO_ROOT/hooks/clp-prompt-scan.sh" 2>/dev/null || echo "")
+  PS_NONE=$(echo '{"user_message":"Hello world"}' | bash "$REPO_ROOT/hooks/scripts/clp-prompt-scan.sh" 2>/dev/null || echo "")
   [ -z "$PS_NONE" ] && pass "PromptScan returns empty for generic prompt" || fail "PromptScan incorrectly matched generic prompt"
 
   info "Testing PreCompact hook..."
-  PC_OUT=$(echo '{"session_id":"test-pc","trigger":"auto","transcript_path":""}' | bash "$REPO_ROOT/hooks/clp-pre-compact.sh" 2>/dev/null || echo "ERROR")
+  PC_OUT=$(echo '{"session_id":"test-pc","trigger":"auto","transcript_path":""}' | bash "$REPO_ROOT/hooks/scripts/clp-pre-compact.sh" 2>/dev/null || echo "ERROR")
   [ -f "$TEMP_DIR/.claude/handoffs/latest.json" ] && pass "PreCompact creates latest.json" || fail "PreCompact failed to create latest.json"
   jq empty "$TEMP_DIR/.claude/handoffs/latest.json" 2>/dev/null && pass "latest.json is valid JSON" || fail "latest.json is invalid"
 
@@ -188,13 +197,13 @@ REGISTRY
   [ -n "$HANDOFF_PATH" ] && jq -e '.clp_version' "$HANDOFF_PATH" &>/dev/null && pass "Handoff has clp_version field" || fail "Handoff missing clp_version"
 
   info "Testing SessionEnd hook..."
-  echo '{"session_id":"test-se","reason":"exit"}' | bash "$REPO_ROOT/hooks/clp-session-end.sh" 2>/dev/null
+  echo '{"session_id":"test-se","reason":"exit"}' | bash "$REPO_ROOT/hooks/scripts/clp-session-end.sh" 2>/dev/null
   SESSION_FILE="$TEMP_DIR/.claude/sessions/$(date +%Y-%m-%d)-session.md"
   [ -f "$SESSION_FILE" ] && pass "SessionEnd creates session memory" || fail "SessionEnd failed to write session file"
   grep -q "test-se" "$SESSION_FILE" 2>/dev/null && pass "Session memory contains session ID" || fail "Session memory missing session ID"
 
   info "Testing SessionStart handoff restoration..."
-  SS_RESTORE=$(echo '{"source":"compact","session_id":"test-restore"}' | bash "$REPO_ROOT/hooks/clp-session-start.sh" 2>/dev/null || echo "ERROR")
+  SS_RESTORE=$(echo '{"source":"compact","session_id":"test-restore"}' | bash "$REPO_ROOT/hooks/scripts/clp-session-start.sh" 2>/dev/null || echo "ERROR")
   echo "$SS_RESTORE" | grep -qi "handoff\|restored\|goal" && pass "SessionStart restores from handoff" || fail "SessionStart failed to restore handoff"
 
   # Cleanup

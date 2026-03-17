@@ -47,6 +47,7 @@ MANIFEST=$(jq -n \
 HFILE="$HANDOFF_DIR/${SESSION_ID}-${SLUG}.json"
 echo "$MANIFEST" | jq "." > "$HFILE" 2>/dev/null || echo "$MANIFEST" > "$HFILE"
 
-echo "{\"path\":\"$HFILE\",\"session_id\":\"$SESSION_ID\",\"timestamp\":\"$TS\"}" > "$HANDOFF_DIR/latest.json"
+jq -n --arg path "$HFILE" --arg session_id "$SESSION_ID" --arg timestamp "$TS" \
+  '{path: $path, session_id: $session_id, timestamp: $timestamp}' > "$HANDOFF_DIR/latest.json"
 echo "CLP: Handoff written to $HFILE" >&2
 exit 0

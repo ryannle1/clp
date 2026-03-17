@@ -17,14 +17,15 @@ CLP treats your 200K token context window as a managed resource — partitioned 
 **As a Claude Code plugin (recommended):**
 
 ```
-/plugin install https://github.com/your-org/clp
+/plugin marketplace add ryannle1/clp
+/plugin install clp@clp-marketplace
 /clp:setup
 ```
 
 **Standalone:**
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/your-org/clp/main/clp-install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/ryannle1/clp/main/clp-install.sh)
 ```
 
 ## Commands

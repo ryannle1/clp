@@ -2,30 +2,15 @@
   "name": "clp",
   "version": "1.0.0",
   "description": "Context Lifecycle Protocol — Zone-based context management with budget tracking, structured handoffs, and demand-loaded skills for Claude Code.",
-  "author": "CLP Contributors",
-  "skills": [
-    "skills/clp-status",
-    "skills/clp-checkpoint",
-    "skills/clp-handoff",
-    "skills/clp-doctor",
-    "skills/clp-plan",
-    "skills/clp-reset",
-    "skills/clp-setup"
-  ],
-  "hooks": {
-    "SessionStart": [
-      { "matcher": "", "hooks": [{ "type": "command", "command": "bash $CLAUDE_PLUGIN_ROOT/hooks/clp-session-start.sh" }] }
-    ],
-    "UserPromptSubmit": [
-      { "matcher": "", "hooks": [{ "type": "command", "command": "bash $CLAUDE_PLUGIN_ROOT/hooks/clp-prompt-scan.sh" }] }
-    ],
-    "PreCompact": [
-      { "matcher": "", "hooks": [{ "type": "command", "command": "bash $CLAUDE_PLUGIN_ROOT/hooks/clp-pre-compact.sh" }] }
-    ],
-    "SessionEnd": [
-      { "matcher": "", "hooks": [{ "type": "command", "command": "bash $CLAUDE_PLUGIN_ROOT/hooks/clp-session-end.sh" }] }
-    ]
+  "author": {
+    "name": "Tri Le",
+    "email": "ryan.trile1@gmail.com"
   },
+  "repository": "https://github.com/ryannle1/clp",
+  "homepage": "https://github.com/ryannle1/clp#readme",
+  "license": "MIT",
+  "keywords": ["context-management", "token-budget", "handoff", "compaction", "skills"],
+  "hooks": "./hooks/hooks.json",
   "rules": [
     "rules/clp-context-rules.md"
   ]
