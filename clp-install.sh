@@ -272,8 +272,7 @@ if command -v git &>/dev/null && git -C "$PROJECT_DIR" rev-parse --is-inside-wor
 fi
 
 # Output
-ESCAPED=$(echo -e "$CONTEXT" | sed "s/\"/\\\\\"/g" | tr "\n" " ")
-echo "{\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"additionalContext\":\"$ESCAPED\"}}"
+echo -e "$CONTEXT" | jq -Rs '"'"'{hookSpecificOutput:{hookEventName:"SessionStart",additionalContext:.}}'"'"''
 exit 0'
 
 # 4b. UserPromptSubmit hook
@@ -287,7 +286,7 @@ REGISTRY="$PROJECT_DIR/.claude/clp/skill-registry.json"
 INPUT=$(cat)
 MSG=$(echo "$INPUT" | jq -r ".user_message // \"\"" 2>/dev/null || echo "")
 
-[ ! -f "$REGISTRY" ] || [ -z "$MSG" ] && exit 0
+{ [ ! -f "$REGISTRY" ] || [ -z "$MSG" ]; } && exit 0
 
 MSG_LOWER=$(echo "$MSG" | tr "[:upper:]" "[:lower:]")
 MATCHED=""
@@ -297,7 +296,7 @@ MAX=$(jq -r ".max_concurrent_skills // 3" "$REGISTRY" 2>/dev/null)
 while IFS= read -r skill; do
   SID=$(echo "$skill" | jq -r ".id")
   for trigger in $(echo "$skill" | jq -r ".triggers[]"); do
-    if echo "$MSG_LOWER" | grep -qi "$trigger"; then
+    if echo "$MSG_LOWER" | grep -qiF "$trigger"; then
       FILES=$(echo "$skill" | jq -r ".files | join(\", \")")
       DESC=$(echo "$skill" | jq -r ".description")
       TOKENS=$(echo "$skill" | jq -r ".estimated_tokens")
@@ -309,8 +308,7 @@ done < <(jq -c ".skills[]" "$REGISTRY")
 
 if [ $COUNT -gt 0 ]; then
   CTX="## CLP Skill Match\n${COUNT} skill(s) matched:$MATCHED\nLoad the listed files for task context."
-  ESCAPED=$(echo -e "$CTX" | sed "s/\"/\\\\\"/g" | tr "\n" " ")
-  echo "{\"hookSpecificOutput\":{\"hookEventName\":\"UserPromptSubmit\",\"additionalContext\":\"$ESCAPED\"}}"
+  echo -e "$CTX" | jq -Rs '"'"'{hookSpecificOutput:{hookEventName:"UserPromptSubmit",additionalContext:.}}'"'"''
 fi
 exit 0'
 
@@ -339,19 +337,27 @@ if [ -n "$TRANSCRIPT" ] && [ -f "$TRANSCRIPT" ]; then
 fi
 
 # Write manifest
-MANIFEST="{
-  \"clp_version\": \"1.0\",
-  \"session_id\": \"$SESSION_ID\",
-  \"timestamp\": \"$TS\",
-  \"trigger\": \"$TRIGGER\",
-  \"project\": \"$PROJECT_DIR\",
-  \"state\": { \"current_goal\": \"See recent requests\", \"status\": \"in_progress\" },
-  \"context\": { \"recent_requests\": $USER_MSGS, \"decisions\": [], \"discoveries\": [] },
-  \"files\": { \"modified\": $MOD_FILES, \"created\": [] },
-  \"tasks\": { \"completed\": [], \"pending\": [] },
-  \"active_skills\": [],
-  \"budget\": {}
-}"
+MANIFEST=$(jq -n \
+  --arg clp_version "1.0" \
+  --arg session_id "$SESSION_ID" \
+  --arg timestamp "$TS" \
+  --arg trigger "$TRIGGER" \
+  --arg project "$PROJECT_DIR" \
+  --argjson user_msgs "$USER_MSGS" \
+  --argjson mod_files "$MOD_FILES" \
+  '"'"'{
+    clp_version: $clp_version,
+    session_id: $session_id,
+    timestamp: $timestamp,
+    trigger: $trigger,
+    project: $project,
+    state: { current_goal: "See recent requests", status: "in_progress" },
+    context: { recent_requests: $user_msgs, decisions: [], discoveries: [] },
+    files: { modified: $mod_files, created: [] },
+    tasks: { completed: [], pending: [] },
+    active_skills: [],
+    budget: {}
+  }'"'"')
 
 HFILE="$HANDOFF_DIR/${SESSION_ID}-${SLUG}.json"
 echo "$MANIFEST" | jq "." > "$HFILE" 2>/dev/null || echo "$MANIFEST" > "$HFILE"
@@ -446,7 +452,17 @@ if [[ "$DRY_RUN" != "true" ]]; then
   if [[ -f "$SETTINGS_PATH" ]] && [[ "$FORCE" != "true" ]]; then
     # Merge: add CLP hooks alongside existing hooks
     EXISTING=$(cat "$SETTINGS_PATH")
-    MERGED=$(echo "$EXISTING" "$CLP_HOOKS" | jq -s '.[0] * .[1]' 2>/dev/null || echo "$CLP_HOOKS")
+    MERGED=$(jq -s '
+      .[0] as $existing | .[1] as $new |
+      ($existing // {}) * ($new // {}) |
+      .hooks |= (
+        ($existing.hooks // {}) as $eh | ($new.hooks // {}) as $nh |
+        ($eh + $nh) | to_entries | map(
+          .key as $k |
+          .value = (($eh[$k] // []) + ($nh[$k] // []) | unique_by(.hooks[0].command))
+        ) | from_entries
+      )
+    ' <<< "$EXISTING"$'\n'"$CLP_HOOKS" 2>/dev/null || echo "$CLP_HOOKS")
     echo "$MERGED" | jq '.' > "$SETTINGS_PATH"
     success "Merged CLP hooks into existing settings.json"
   else

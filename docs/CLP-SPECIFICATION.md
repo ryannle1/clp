@@ -27,7 +27,7 @@ Context is memory. Treat it like an operating system treats RAM:
 The 200K token window is partitioned into four zones. Each zone has a purpose,
 a size budget, and an eviction policy.
 
-### 1.1 Kernel zone (protected, ≤8K tokens)
+### 1.1 Kernel zone (protected, ≤22K tokens)
 
 **What lives here:** System prompt, pointer-index CLAUDE.md, .claude/rules/, hard
 constraints, and the CLP runtime manifest (the index of what's available to load).

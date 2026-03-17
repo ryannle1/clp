@@ -22,19 +22,27 @@ if [ -n "$TRANSCRIPT" ] && [ -f "$TRANSCRIPT" ]; then
 fi
 
 # Write manifest
-MANIFEST="{
-  \"clp_version\": \"1.0\",
-  \"session_id\": \"$SESSION_ID\",
-  \"timestamp\": \"$TS\",
-  \"trigger\": \"$TRIGGER\",
-  \"project\": \"$PROJECT_DIR\",
-  \"state\": { \"current_goal\": \"See recent requests\", \"status\": \"in_progress\" },
-  \"context\": { \"recent_requests\": $USER_MSGS, \"decisions\": [], \"discoveries\": [] },
-  \"files\": { \"modified\": $MOD_FILES, \"created\": [] },
-  \"tasks\": { \"completed\": [], \"pending\": [] },
-  \"active_skills\": [],
-  \"budget\": {}
-}"
+MANIFEST=$(jq -n \
+  --arg clp_version "1.0" \
+  --arg session_id "$SESSION_ID" \
+  --arg timestamp "$TS" \
+  --arg trigger "$TRIGGER" \
+  --arg project "$PROJECT_DIR" \
+  --argjson user_msgs "$USER_MSGS" \
+  --argjson mod_files "$MOD_FILES" \
+  '{
+    clp_version: $clp_version,
+    session_id: $session_id,
+    timestamp: $timestamp,
+    trigger: $trigger,
+    project: $project,
+    state: { current_goal: "See recent requests", status: "in_progress" },
+    context: { recent_requests: $user_msgs, decisions: [], discoveries: [] },
+    files: { modified: $mod_files, created: [] },
+    tasks: { completed: [], pending: [] },
+    active_skills: [],
+    budget: {}
+  }')
 
 HFILE="$HANDOFF_DIR/${SESSION_ID}-${SLUG}.json"
 echo "$MANIFEST" | jq "." > "$HFILE" 2>/dev/null || echo "$MANIFEST" > "$HFILE"

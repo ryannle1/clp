@@ -14,16 +14,16 @@
   ],
   "hooks": {
     "SessionStart": [
-      { "matcher": "", "hooks": [{ "type": "command", "command": "bash $PLUGIN_DIR/hooks/clp-session-start.sh" }] }
+      { "matcher": "", "hooks": [{ "type": "command", "command": "bash $CLAUDE_PLUGIN_ROOT/hooks/clp-session-start.sh" }] }
     ],
     "UserPromptSubmit": [
-      { "matcher": "", "hooks": [{ "type": "command", "command": "bash $PLUGIN_DIR/hooks/clp-prompt-scan.sh" }] }
+      { "matcher": "", "hooks": [{ "type": "command", "command": "bash $CLAUDE_PLUGIN_ROOT/hooks/clp-prompt-scan.sh" }] }
     ],
     "PreCompact": [
-      { "matcher": "", "hooks": [{ "type": "command", "command": "bash $PLUGIN_DIR/hooks/clp-pre-compact.sh" }] }
+      { "matcher": "", "hooks": [{ "type": "command", "command": "bash $CLAUDE_PLUGIN_ROOT/hooks/clp-pre-compact.sh" }] }
     ],
     "SessionEnd": [
-      { "matcher": "", "hooks": [{ "type": "command", "command": "bash $PLUGIN_DIR/hooks/clp-session-end.sh" }] }
+      { "matcher": "", "hooks": [{ "type": "command", "command": "bash $CLAUDE_PLUGIN_ROOT/hooks/clp-session-end.sh" }] }
     ]
   },
   "rules": [

@@ -49,6 +49,5 @@ if command -v git &>/dev/null && git -C "$PROJECT_DIR" rev-parse --is-inside-wor
 fi
 
 # Output
-ESCAPED=$(echo -e "$CONTEXT" | sed "s/\"/\\\\\"/g" | tr "\n" " ")
-echo "{\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"additionalContext\":\"$ESCAPED\"}}"
+echo -e "$CONTEXT" | jq -Rs '{hookSpecificOutput:{hookEventName:"SessionStart",additionalContext:.}}'
 exit 0
