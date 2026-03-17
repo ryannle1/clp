@@ -1,0 +1,57 @@
+{
+  "clp_version": "1.0",
+  "_comment": "Example skill registry for a Python / Django project",
+  "skills": [
+    {
+      "id": "models",
+      "triggers": ["model", "database", "migration", "schema", "field", "queryset", "orm", "django-model"],
+      "files": ["docs/specs/models-spec.md"],
+      "estimated_tokens": 1100,
+      "zone": "active",
+      "description": "Django models: schema conventions, field types, migrations, query optimization"
+    },
+    {
+      "id": "views-api",
+      "triggers": ["view", "api", "endpoint", "serializer", "drf", "rest", "viewset", "permission", "throttle"],
+      "files": ["docs/design/api-conventions.md"],
+      "estimated_tokens": 900,
+      "zone": "active",
+      "description": "Views and API: DRF patterns, serializers, permissions, pagination"
+    },
+    {
+      "id": "auth",
+      "triggers": ["auth", "login", "permission", "token", "jwt", "oauth", "session", "user", "password"],
+      "files": ["docs/specs/auth-spec.md"],
+      "estimated_tokens": 800,
+      "zone": "active",
+      "description": "Authentication: auth backends, token management, permissions"
+    },
+    {
+      "id": "testing",
+      "triggers": ["test", "pytest", "fixture", "mock", "factory", "coverage", "assert", "conftest"],
+      "files": ["docs/guides/testing.md"],
+      "estimated_tokens": 1200,
+      "zone": "active",
+      "description": "Testing: pytest patterns, factory_boy, fixture conventions, coverage"
+    },
+    {
+      "id": "celery",
+      "triggers": ["celery", "task", "queue", "worker", "async", "background", "periodic", "beat", "broker"],
+      "files": ["docs/specs/celery-spec.md"],
+      "estimated_tokens": 700,
+      "zone": "active",
+      "description": "Celery: task patterns, retry logic, periodic tasks, monitoring"
+    },
+    {
+      "id": "deployment",
+      "triggers": ["deploy", "docker", "gunicorn", "nginx", "ci", "pipeline", "release", "kubernetes"],
+      "files": ["docs/guides/deployment.md"],
+      "estimated_tokens": 800,
+      "zone": "active",
+      "description": "Deployment: Docker, CI/CD, environment management, release process"
+    }
+  ],
+  "max_concurrent_skills": 3,
+  "evict_after_turns_inactive": 5,
+  "fallback_message": "No skills matched. Available: models, views-api, auth, testing, celery, deployment."
+}

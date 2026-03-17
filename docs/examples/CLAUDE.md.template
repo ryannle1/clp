@@ -1,0 +1,39 @@
+# [Project Name]
+
+[One sentence: language, framework, what it does.]
+
+## CLP Active
+
+Context Lifecycle Protocol manages this project's context. Skills load on demand
+via trigger keywords. Do NOT pre-read documentation unless the task requires it.
+
+## Hard Rules
+
+- [Rule 1: e.g., TypeScript strict mode, no `any` types]
+- [Rule 2: e.g., All functions require explicit return types]
+- [Rule 3: e.g., Conventional commits format]
+- [Rule 4: e.g., All API endpoints require integration tests]
+
+## Architecture Index
+
+When working in a specific area, read the relevant spec:
+
+- Auth/login/sessions → `docs/specs/auth-spec.md`
+- API routes/endpoints → `docs/design/api-conventions.md`
+- Database/migrations → `docs/specs/database-spec.md`
+- Testing/mocks → `docs/guides/testing.md`
+- Deployment/CI → `docs/guides/deployment.md`
+- Debugging/errors → `docs/guides/debugging.md`
+
+## Component Rules
+
+Component CLAUDE.md files auto-load when working in that directory:
+
+- `backend/CLAUDE.md` — API patterns, middleware conventions
+- `frontend/CLAUDE.md` — React/component patterns
+- `shared/CLAUDE.md` — Shared types and utilities
+
+## Compact Instructions
+
+When compacting, preserve: current goal, files modified, architectural decisions,
+pending tasks, error messages debugged.

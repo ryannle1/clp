@@ -1,0 +1,35 @@
+# ── OS ──
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ── Editors / IDE ──
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ── CLP runtime artifacts (generated during testing / local use) ──
+# These are created by hooks and should never be committed
+.claude/handoffs/
+.claude/sessions/
+!.claude-plugin/
+
+# ── Test artifacts ──
+tests/tmp/
+tests/*.log
+
+# ── Archives / build outputs ──
+*.tar.gz
+*.zip
+dist/
+
+# ── Node (if contributors use npm tooling) ──
+node_modules/
+package-lock.json
+
+# ── Python (if contributors use Python tooling) ──
+__pycache__/
+*.pyc
+.venv/

@@ -1,0 +1,73 @@
+{
+  "clp_version": "1.0",
+  "_comment": "Example skill registry for a Next.js / TypeScript project",
+  "skills": [
+    {
+      "id": "auth",
+      "triggers": ["auth", "oauth", "login", "jwt", "token", "session", "pkce", "nextauth", "credential", "password"],
+      "files": ["docs/specs/auth-spec.md"],
+      "estimated_tokens": 1200,
+      "zone": "active",
+      "description": "Authentication and authorization: OAuth flows, JWT handling, session management"
+    },
+    {
+      "id": "api",
+      "triggers": ["api", "endpoint", "rest", "route", "handler", "middleware", "controller", "request", "response"],
+      "files": ["docs/design/api-conventions.md"],
+      "estimated_tokens": 800,
+      "zone": "active",
+      "description": "API design: route patterns, middleware chain, error handling, validation"
+    },
+    {
+      "id": "database",
+      "triggers": ["database", "db", "migration", "schema", "query", "sql", "prisma", "drizzle", "orm", "seed"],
+      "files": ["docs/specs/database-spec.md"],
+      "estimated_tokens": 1000,
+      "zone": "active",
+      "description": "Database: schema design, migrations, query patterns, ORM conventions"
+    },
+    {
+      "id": "testing",
+      "triggers": ["test", "spec", "jest", "vitest", "coverage", "mock", "fixture", "e2e", "playwright", "cypress"],
+      "files": ["docs/guides/testing.md"],
+      "estimated_tokens": 1500,
+      "zone": "active",
+      "description": "Testing: unit tests, integration tests, e2e patterns, mock strategies"
+    },
+    {
+      "id": "frontend",
+      "triggers": ["component", "react", "hook", "state", "ui", "css", "tailwind", "style", "layout", "page"],
+      "files": ["docs/design/frontend-patterns.md"],
+      "estimated_tokens": 1100,
+      "zone": "active",
+      "description": "Frontend: React patterns, component conventions, styling approach"
+    },
+    {
+      "id": "deployment",
+      "triggers": ["deploy", "ci", "cd", "pipeline", "docker", "vercel", "build", "release", "env", "environment"],
+      "files": ["docs/guides/deployment.md"],
+      "estimated_tokens": 900,
+      "zone": "active",
+      "description": "Deployment: CI/CD pipeline, environment config, release process"
+    },
+    {
+      "id": "debugging",
+      "triggers": ["bug", "error", "fix", "debug", "trace", "crash", "exception", "investigate", "broken", "failing"],
+      "files": ["docs/guides/debugging.md"],
+      "estimated_tokens": 600,
+      "zone": "active",
+      "description": "Debugging: investigation protocol, common error patterns, logging"
+    },
+    {
+      "id": "performance",
+      "triggers": ["performance", "slow", "optimize", "cache", "lazy", "bundle", "lighthouse", "speed", "memory"],
+      "files": ["docs/guides/performance.md"],
+      "estimated_tokens": 700,
+      "zone": "active",
+      "description": "Performance: caching strategies, bundle optimization, monitoring"
+    }
+  ],
+  "max_concurrent_skills": 3,
+  "evict_after_turns_inactive": 5,
+  "fallback_message": "No skills matched. Working with pointer index only. Available: auth, api, database, testing, frontend, deployment, debugging, performance."
+}

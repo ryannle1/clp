@@ -1,0 +1,15 @@
+{
+  "name": "clp-marketplace",
+  "owner": { "name": "CLP Contributors" },
+  "metadata": {
+    "description": "Context Lifecycle Protocol plugin marketplace",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "clp",
+      "source": "./",
+      "description": "Zone-based context management with budget tracking, structured handoffs, and demand-loaded skills."
+    }
+  ]
+}

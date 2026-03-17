@@ -1,0 +1,57 @@
+name: CLP Test Suite
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Validate Plugin
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: sudo apt-get install -y jq
+
+      - name: Run test suite
+        run: bash tests/run-tests.sh
+
+      - name: Validate JSON files
+        run: |
+          for f in .claude-plugin/plugin.json .claude-plugin/marketplace.json; do
+            echo "Validating $f..."
+            jq empty "$f" || exit 1
+          done
+          echo "All JSON valid."
+
+      - name: Check hook permissions
+        run: |
+          for hook in hooks/*.sh; do
+            if [ ! -x "$hook" ]; then
+              echo "ERROR: $hook is not executable"
+              exit 1
+            fi
+          done
+          echo "All hooks executable."
+
+      - name: Check skill frontmatter
+        run: |
+          for skill_dir in skills/*/; do
+            skill_md="$skill_dir/SKILL.md"
+            if [ -f "$skill_md" ]; then
+              head -1 "$skill_md" | grep -q "^---" || { echo "ERROR: $skill_md missing frontmatter"; exit 1; }
+              grep -q "^name:" "$skill_md" || { echo "ERROR: $skill_md missing name"; exit 1; }
+              grep -q "^description:" "$skill_md" || { echo "ERROR: $skill_md missing description"; exit 1; }
+            fi
+          done
+          echo "All skills have valid frontmatter."
+
+      - name: Test standalone installer (dry run)
+        run: |
+          mkdir -p /tmp/test-project && cd /tmp/test-project && git init -q
+          bash $GITHUB_WORKSPACE/clp-install.sh --project /tmp/test-project --verbose
+          bash /tmp/test-project/.claude/hooks/clp-doctor.sh /tmp/test-project
