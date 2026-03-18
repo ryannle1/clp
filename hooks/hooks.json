@@ -2,7 +2,9 @@
   "hooks": {
     "PreToolUse": [
       { "matcher": "Read", "hooks": [{ "type": "command", "command": "bash $CLAUDE_PLUGIN_ROOT/hooks/scripts/clp-pre-read.sh" }] },
-      { "matcher": "Bash", "hooks": [{ "type": "command", "command": "bash $CLAUDE_PLUGIN_ROOT/hooks/scripts/clp-pre-bash.sh" }] }
+      { "matcher": "Bash", "hooks": [{ "type": "command", "command": "bash $CLAUDE_PLUGIN_ROOT/hooks/scripts/clp-pre-bash.sh" }] },
+      { "matcher": "Glob", "hooks": [{ "type": "command", "command": "bash $CLAUDE_PLUGIN_ROOT/hooks/scripts/clp-pre-glob.sh" }] },
+      { "matcher": "Agent", "hooks": [{ "type": "command", "command": "bash $CLAUDE_PLUGIN_ROOT/hooks/scripts/clp-pre-agent.sh" }] }
     ],
     "SessionStart": [
       { "matcher": "", "hooks": [{ "type": "command", "command": "bash $CLAUDE_PLUGIN_ROOT/hooks/scripts/clp-session-start.sh" }] }
