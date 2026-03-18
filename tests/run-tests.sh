@@ -78,7 +78,6 @@ assert_file_exists "README.md"
 assert_file_exists "LICENSE"
 assert_file_exists "CONTRIBUTING.md"
 assert_file_exists "CHANGELOG.md"
-assert_file_exists "clp-install.sh"
 assert_dir_exists ".claude-plugin"
 assert_dir_exists "skills"
 assert_dir_exists "hooks"
@@ -146,18 +145,12 @@ assert_file_contains "rules/clp-context-rules.md" "<zone_awareness>"
 assert_file_contains "rules/clp-context-rules.md" "<token_discipline>"
 assert_file_contains "rules/clp-context-rules.md" "<handoff_protocol>"
 
-section "6. Standalone Installer"
-assert_file_exists "clp-install.sh"
-assert_executable "clp-install.sh"
-assert_file_contains "clp-install.sh" "CLP_VERSION="
-assert_file_contains "clp-install.sh" "Pre-flight checks"
-
-section "7. Documentation"
+section "6. Documentation"
 assert_file_exists "docs/CLP-SPECIFICATION.md"
 assert_file_contains "docs/CLP-SPECIFICATION.md" "Context Lifecycle Protocol"
 assert_file_contains "docs/CLP-SPECIFICATION.md" "version"
 
-section "8. Hook Functional Tests"
+section "7. Hook Functional Tests"
 if command -v jq &>/dev/null; then
   # Create temp project for hook testing
   TEMP_DIR=$(mktemp -d)

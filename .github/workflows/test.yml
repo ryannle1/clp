@@ -50,8 +50,3 @@ jobs:
           done
           echo "All skills have valid frontmatter."
 
-      - name: Test standalone installer (dry run)
-        run: |
-          mkdir -p /tmp/test-project && cd /tmp/test-project && git init -q
-          bash $GITHUB_WORKSPACE/clp-install.sh --project /tmp/test-project --verbose
-          bash /tmp/test-project/.claude/hooks/clp-doctor.sh /tmp/test-project

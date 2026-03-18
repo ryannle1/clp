@@ -22,12 +22,6 @@ CLP treats your 200K token context window as a managed resource — partitioned 
 /clp:setup
 ```
 
-**Standalone:**
-
-```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/ryannle1/clp/main/clp-install.sh)
-```
-
 ## Commands
 
 | Command | What it does |
