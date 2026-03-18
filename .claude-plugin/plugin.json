@@ -1,6 +1,6 @@
 {
   "name": "clp",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Context Lifecycle Protocol — Zone-based context management with budget tracking, structured handoffs, and demand-loaded skills for Claude Code.",
   "author": {
     "name": "Tri Le",
@@ -12,6 +12,6 @@
   "keywords": ["context-management", "token-budget", "handoff", "compaction", "skills"],
   "hooks": "hooks/hooks.json",
   "rules": [
-    "rules/clp-context-rules.md"
+    "rules/clp-tool-rules.md"
   ]
 }

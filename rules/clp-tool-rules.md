@@ -1,9 +1,9 @@
-<clp_protocol version="1.0">
+<clp_protocol version="2.0">
 
 <context_management>
-  You are operating under the Context Lifecycle Protocol (CLP).
+  You are operating under the Context Lifecycle Protocol (CLP) v2.0.
   Your context window is partitioned into managed zones with budget tracking.
-  Follow these rules to minimize context bloat and maximize session longevity.
+  Your tool use is guided by optimization rules: accuracy first, speed second, leanness third.
 </context_management>
 
 <zone_awareness>
@@ -24,37 +24,59 @@
   </zone>
 </zone_awareness>
 
-<token_discipline>
-  <rule priority="critical">
-    Before reading a file, ask: does this task require the full file content?
-    If only a function signature or a specific section is needed, use Grep or
-    targeted Read with line ranges instead of reading the entire file.
-  </rule>
-  <rule priority="critical">
-    Delegate exploration tasks to subagents. When investigating how a system works,
-    reading multiple files to understand patterns, or searching for code — use a
-    subagent. The subagent's file reads stay in its isolated context, not yours.
-  </rule>
-  <rule priority="high">
-    After completing a tool operation, summarize the result mentally before proceeding.
-    The raw tool output persists in the working zone. If the output was large (>2K tokens),
-    note the key information you extracted so you don't need to re-read it.
-  </rule>
-  <rule priority="high">
-    When approaching 75% context utilization, run /clp:checkpoint to preserve state,
-    then consider /compact to free working zone space.
-  </rule>
-  <rule priority="normal">
-    Use Plan Mode (Shift+Tab) for analysis and planning tasks.
-    Switch to normal mode for implementation. This roughly halves token cost
-    for thinking-heavy work.
-  </rule>
-</token_discipline>
+<tool_optimization>
+  <accuracy priority="critical">
+    Before reading any file, state what you are looking for.
+    Use Grep to find it, then Read only the relevant line range.
+  </accuracy>
+  <accuracy priority="critical">
+    Never read a file "to understand it." Delegate understanding tasks
+    to an Explore subagent and receive a summary back.
+  </accuracy>
+  <accuracy priority="critical">
+    When a task involves unknown codebase areas, dispatch an Explore
+    subagent first. Do not start implementation until you have findings.
+  </accuracy>
+  <accuracy priority="high">
+    When multiple files might contain what you need, Glob first to
+    identify candidates, then Grep to confirm, then Read the match.
+  </accuracy>
+
+  <speed priority="critical">
+    When 2+ independent questions need answering, dispatch parallel
+    subagents. Never answer them sequentially.
+  </speed>
+  <speed priority="high">
+    When implementation requires understanding multiple subsystems,
+    dispatch one Explore subagent per subsystem in parallel.
+  </speed>
+  <speed priority="high">
+    Prefer Grep with output_mode "content" and line context over Read
+    when only a few lines are needed.
+  </speed>
+
+  <leanness priority="critical">
+    After a tool returns output, never re-invoke the same tool for the
+    same content. Extract what you need on first read.
+  </leanness>
+  <leanness priority="critical">
+    Bash commands must include output limits: head, tail, | head -n,
+    --max-count. Never run unbounded commands.
+  </leanness>
+  <leanness priority="high">
+    When a Read result exceeds 200 lines, mentally note the key
+    information and move on. Do not quote large sections back.
+  </leanness>
+  <leanness priority="high">
+    Delegate all "find and report" tasks to subagents. Only bring
+    results into main context, not the search process.
+  </leanness>
+</tool_optimization>
 
 <skill_loading>
   Skills are demand-loaded via the skill registry (.claude/clp/skill-registry.json).
   When a user prompt matches trigger keywords, the matched skill files are suggested.
-  
+
   <rule>Do NOT pre-read all documentation files at session start.</rule>
   <rule>Do NOT read skill files unless the current task requires them.</rule>
   <rule>When a skill is suggested by the prompt scan hook, read it once and retain
@@ -71,7 +93,7 @@
     - Before running /compact manually
     - When the user asks to pause, stop, or hand off work
   </when_to_checkpoint>
-  
+
   <checkpoint_quality>
     A good checkpoint lets a fresh session continue without asking clarifying questions.
     Include: the goal (why), decisions made (what and why), files changed (where),
@@ -81,10 +103,10 @@
 
 <xml_prompting_convention>
   When generating structured content for CLP (handoff manifests, status reports,
-  execution plans), use XML tags internally to organize your reasoning before
+  execution plans), use XML tags internally to organize reasoning before
   producing the final output. This improves accuracy and ensures nothing is missed.
-  
-  The user's prompts may also use XML tags. Respect the tag hierarchy:
+
+  User prompts may also use XML tags. Respect the tag hierarchy:
   outer tags define scope and intent, inner tags define execution details.
 </xml_prompting_convention>
 
