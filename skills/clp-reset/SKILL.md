@@ -1,6 +1,6 @@
 ---
 name: clp-reset
-description: Reset CLP state for a fresh start. Clears handoffs, session memory, and optionally the skill registry. Use when starting a completely new task unrelated to previous work, or when handoff state has become stale or corrupted.
+description: Reset CLP state for a fresh start. Clears handoffs, session memory, and optionally the skill registry. This skill should be used when starting a completely new task unrelated to previous work, or when handoff state has become stale or corrupted.
 ---
 
 <instructions>

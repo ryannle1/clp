@@ -317,28 +317,32 @@ It's the routing table that makes demand-loading work.
       "triggers": ["auth", "oauth", "login", "jwt", "token", "session", "pkce"],
       "files": ["docs/specs/auth-spec.md"],
       "estimated_tokens": 1200,
-      "zone": "active"
+      "zone": "active",
+      "description": "Authentication and authorization specifications"
     },
     {
       "name": "api-design",
       "triggers": ["api", "endpoint", "rest", "route", "controller"],
       "files": ["docs/design/api-conventions.md"],
       "estimated_tokens": 800,
-      "zone": "active"
+      "zone": "active",
+      "description": "API design conventions and route patterns"
     },
     {
       "name": "testing",
       "triggers": ["test", "spec", "jest", "vitest", "coverage", "mock"],
       "files": ["docs/guides/testing.md"],
       "estimated_tokens": 1500,
-      "zone": "active"
+      "zone": "active",
+      "description": "Testing conventions and patterns"
     },
     {
       "name": "debugging",
       "triggers": ["bug", "error", "fix", "debug", "stack trace", "crash"],
       "files": ["docs/guides/debugging.md"],
       "estimated_tokens": 600,
-      "zone": "active"
+      "zone": "active",
+      "description": "Debugging investigation protocol and error patterns"
     }
   ],
   "fallback": "If no skills match, load only the pointer index."

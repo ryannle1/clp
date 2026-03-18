@@ -1,6 +1,6 @@
 ---
 name: clp-status
-description: Show current CLP context budget utilization, zone breakdown, active skills, and session health. Use when checking token usage, context status, budget remaining, or before deciding whether to compact.
+description: Show current CLP context budget utilization, zone breakdown, active skills, and session health. This skill should be used when checking token usage, context status, budget remaining, or before deciding whether to compact.
 ---
 
 <context>
@@ -22,7 +22,7 @@ Generate a CLP status report by performing these steps:
 4. Check `.claude/handoffs/latest.json` for the most recent handoff timestamp
 5. Check `.claude/sessions/` for today's session memory file
 
-Present the report using this exact XML structure for your own reasoning,
+Present the report using this exact XML structure for internal reasoning,
 then output a clean summary:
 
 <status_report>

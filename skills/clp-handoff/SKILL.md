@@ -1,6 +1,6 @@
 ---
 name: clp-handoff
-description: Generate or restore a session handoff. Use when starting a new session, transferring work to another developer, resuming after compaction, or preparing to hand off work. Supports both creating handoffs and loading existing ones.
+description: Generate or restore a session handoff. This skill should be used when starting a new session, transferring work to another developer, resuming after compaction, or preparing to hand off work. Supports both creating handoffs and loading existing ones.
 ---
 
 <context>

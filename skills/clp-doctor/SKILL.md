@@ -1,6 +1,6 @@
 ---
 name: clp-doctor
-description: Diagnose and validate the CLP installation. Checks directory structure, configuration files, hook wiring, skill registry, and context optimization. Use when something seems wrong, after initial setup, or to audit the installation.
+description: Diagnose and validate the CLP installation. Checks directory structure, configuration files, hook wiring, skill registry, and context optimization. This skill should be used when something seems wrong, after initial setup, or to audit the installation.
 ---
 
 <instructions>

@@ -1,6 +1,6 @@
 ---
 name: clp-plan
-description: Plan a task with context budget awareness. Breaks work into context-sized chunks, estimates token cost per phase, and suggests when to checkpoint or use subagents. Use before starting any non-trivial task.
+description: Plan a task with context budget awareness. Breaks work into context-sized chunks, estimates token cost per phase, and suggests when to checkpoint or use subagents. This skill should be used before starting any non-trivial task, when the user asks to "plan this", "estimate tokens", or "break this into phases".
 ---
 
 <context>

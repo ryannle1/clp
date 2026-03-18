@@ -1,6 +1,6 @@
 ---
 name: clp-setup
-description: Initialize CLP configuration in the current project. Creates the skill registry, zone manifest, directory structure, and .claudeignore. Run this once after installing the CLP plugin.
+description: Initialize CLP configuration in the current project. Creates the skill registry, zone manifest, directory structure, and .claudeignore. This skill should be used when the user asks to "initialize CLP", "set up CLP", or "configure CLP for this project".
 ---
 
 <instructions>
@@ -72,7 +72,7 @@ After setup, show a concise summary:
 - CLAUDE.md: [status — already lean / needs slimming / created]
 - .claudeignore: [created / already exists]
 
-**Next:** Run `/clp:status` to see your baseline token usage.
+**Next:** Run `/clp:status` to see the baseline token usage.
 </output_format>
 
 <rules>

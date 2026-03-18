@@ -5,31 +5,26 @@ set -euo pipefail
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-.}"
 REGISTRY="$PROJECT_DIR/.claude/clp/skill-registry.json"
 
+[ ! -f "$REGISTRY" ] && exit 0
+
 INPUT=$(cat)
 MSG=$(echo "$INPUT" | jq -r ".user_message // \"\"" 2>/dev/null || echo "")
-
-{ [ ! -f "$REGISTRY" ] || [ -z "$MSG" ]; } && exit 0
+[ -z "$MSG" ] && exit 0
 
 MSG_LOWER=$(echo "$MSG" | tr "[:upper:]" "[:lower:]")
-MATCHED=""
-COUNT=0
-MAX=$(jq -r ".max_concurrent_skills // 3" "$REGISTRY" 2>/dev/null)
 
-while IFS= read -r skill; do
-  SID=$(echo "$skill" | jq -r ".name")
-  for trigger in $(echo "$skill" | jq -r ".triggers[]"); do
-    if echo "$MSG_LOWER" | grep -qiF "$trigger"; then
-      FILES=$(echo "$skill" | jq -r ".files | join(\", \")")
-      DESC=$(echo "$skill" | jq -r ".description")
-      TOKENS=$(echo "$skill" | jq -r ".estimated_tokens")
-      [ $COUNT -lt "$MAX" ] && MATCHED="$MATCHED\n- $SID: $DESC -> Read: $FILES (~${TOKENS}t)" && COUNT=$((COUNT + 1))
-      break
-    fi
-  done
-done < <(jq -c ".skills[]" "$REGISTRY")
+# Single jq call to match all skills — avoids per-skill subprocess spawning
+RESULT=$(jq -r --arg msg "$MSG_LOWER" '
+  (.max_concurrent_skills // 3) as $max |
+  [ .skills[] |
+    select(any(.triggers[]; ascii_downcase | . as $t | $msg | contains($t))) |
+    "- \(.name): \(.description // "no description") -> Read: \(.files | join(", ")) (~\(.estimated_tokens // "?")t)"
+  ] | .[:$max] | .[]
+' "$REGISTRY" 2>/dev/null || echo "")
 
-if [ $COUNT -gt 0 ]; then
-  CTX="## CLP Skill Match\n${COUNT} skill(s) matched:$MATCHED\nLoad the listed files for task context."
+if [ -n "$RESULT" ]; then
+  COUNT=$(echo "$RESULT" | wc -l | tr -d ' ')
+  CTX="## CLP Skill Match\n${COUNT} skill(s) matched:\n${RESULT}\nLoad the listed files for task context."
   echo -e "$CTX" | jq -Rs '{hookSpecificOutput:{hookEventName:"UserPromptSubmit",additionalContext:.}}'
 fi
 exit 0

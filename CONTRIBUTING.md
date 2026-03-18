@@ -4,7 +4,7 @@
 
 1. Create a directory: `skills/clp-yourskill/`
 2. Create `SKILL.md` with YAML frontmatter and XML-structured content
-3. Add the skill path to `.claude-plugin/plugin.json` in the `skills` array
+3. Skills are auto-discovered — no need to list them in `plugin.json`
 4. Run `bash tests/run-tests.sh` to validate
 
 ### Skill Template

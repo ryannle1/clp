@@ -30,7 +30,7 @@ jobs:
 
       - name: Check hook permissions
         run: |
-          for hook in hooks/*.sh; do
+          for hook in hooks/scripts/*.sh; do
             if [ ! -x "$hook" ]; then
               echo "ERROR: $hook is not executable"
               exit 1

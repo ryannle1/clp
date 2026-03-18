@@ -107,7 +107,7 @@ if command -v jq &>/dev/null; then
     HOOKS_FILE="$REPO_ROOT/${HOOKS_PATH#./}"
     [ -f "$HOOKS_FILE" ] && pass "hooks config file exists at $HOOKS_PATH" || fail "hooks config file missing at $HOOKS_PATH"
     if [ -f "$HOOKS_FILE" ]; then
-      HOOK_COUNT=$(jq 'keys | length' "$HOOKS_FILE" 2>/dev/null)
+      HOOK_COUNT=$(jq '.hooks | keys | length' "$HOOKS_FILE" 2>/dev/null)
       [ "$HOOK_COUNT" -ge 4 ] && pass "Hooks config declares $HOOK_COUNT hook events (≥4)" || fail "Hooks config declares only $HOOK_COUNT hook events (need ≥4)"
     fi
   fi
@@ -126,7 +126,7 @@ for skill_dir in clp-status clp-checkpoint clp-handoff clp-doctor clp-plan clp-r
 done
 
 section "4. Hook Scripts"
-for hook in clp-session-start clp-prompt-scan clp-pre-compact clp-session-end; do
+for hook in clp-session-start clp-prompt-scan clp-pre-compact clp-session-end clp-statusline; do
   assert_file_exists "hooks/scripts/$hook.sh"
   assert_executable "hooks/scripts/$hook.sh"
 
