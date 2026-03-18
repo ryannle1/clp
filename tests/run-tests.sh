@@ -155,7 +155,7 @@ assert_file_contains "clp-install.sh" "Pre-flight checks"
 section "7. Documentation"
 assert_file_exists "docs/CLP-SPECIFICATION.md"
 assert_file_contains "docs/CLP-SPECIFICATION.md" "Context Lifecycle Protocol"
-assert_file_contains "docs/CLP-SPECIFICATION.md" "clp_version"
+assert_file_contains "docs/CLP-SPECIFICATION.md" "version"
 
 section "8. Hook Functional Tests"
 if command -v jq &>/dev/null; then
@@ -165,11 +165,11 @@ if command -v jq &>/dev/null; then
 
   # Copy test configs
   cat > "$TEMP_DIR/.claude/clp/manifest.json" << 'MANIFEST'
-{"clp_version":"1.0","zones":{"kernel":{"max_tokens":22000},"active":{"max_tokens":40000},"working":{"max_tokens":133000},"buffer":{"max_tokens":5000}}}
+{"version":"1.0","zones":{"kernel":{"budget_tokens":22000},"active":{"budget_tokens":40000},"working":{"budget_tokens":133000},"buffer":{"budget_tokens":5000}}}
 MANIFEST
 
   cat > "$TEMP_DIR/.claude/clp/skill-registry.json" << 'REGISTRY'
-{"clp_version":"1.0","skills":[{"id":"auth","triggers":["auth","oauth","login"],"files":["docs/auth.md"],"estimated_tokens":1000,"zone":"active","description":"Auth specs"},{"id":"testing","triggers":["test","jest","spec"],"files":["docs/testing.md"],"estimated_tokens":800,"zone":"active","description":"Testing guide"}],"max_concurrent_skills":3}
+{"version":"1.0","skills":[{"name":"auth","triggers":["auth","oauth","login"],"files":["docs/auth.md"],"estimated_tokens":1000,"zone":"active","description":"Auth specs"},{"name":"testing","triggers":["test","jest","spec"],"files":["docs/testing.md"],"estimated_tokens":800,"zone":"active","description":"Testing guide"}],"max_concurrent_skills":3}
 REGISTRY
 
   export CLAUDE_PROJECT_DIR="$TEMP_DIR"
@@ -194,7 +194,7 @@ REGISTRY
 
   HANDOFF_PATH=$(jq -r '.path' "$TEMP_DIR/.claude/handoffs/latest.json" 2>/dev/null || echo "")
   [ -n "$HANDOFF_PATH" ] && [ -f "$HANDOFF_PATH" ] && pass "Handoff manifest file exists" || fail "Handoff manifest file missing"
-  [ -n "$HANDOFF_PATH" ] && jq -e '.clp_version' "$HANDOFF_PATH" &>/dev/null && pass "Handoff has clp_version field" || fail "Handoff missing clp_version"
+  [ -n "$HANDOFF_PATH" ] && jq -e '.version' "$HANDOFF_PATH" &>/dev/null && pass "Handoff has version field" || fail "Handoff missing version"
 
   info "Testing SessionEnd hook..."
   echo '{"session_id":"test-se","reason":"exit"}' | bash "$REPO_ROOT/hooks/scripts/clp-session-end.sh" 2>/dev/null

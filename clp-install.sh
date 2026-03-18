@@ -151,10 +151,10 @@ step "3" "Writing CLP configuration"
 
 # 3a. CLP manifest
 write_file "$PROJECT_DIR/.claude/clp/manifest.json" '{
-  "clp_version": "1.0",
+  "version": "1.0",
   "zones": {
     "kernel": {
-      "max_tokens": 22000,
+      "budget_tokens": 22000,
       "policy": "protected",
       "contents": [
         { "type": "system", "source": "built-in" },
@@ -164,17 +164,17 @@ write_file "$PROJECT_DIR/.claude/clp/manifest.json" '{
       ]
     },
     "active": {
-      "max_tokens": 40000,
+      "budget_tokens": 40000,
       "policy": "task_scoped",
       "loader": "skill_registry",
       "registry_path": ".claude/clp/skill-registry.json"
     },
     "working": {
-      "max_tokens": 133000,
+      "budget_tokens": 133000,
       "policy": "lru_evict"
     },
     "buffer": {
-      "max_tokens": 5000,
+      "budget_tokens": 5000,
       "policy": "flush_on_compact",
       "handoff_path": ".claude/handoffs/"
     }
@@ -190,10 +190,10 @@ success "CLP manifest"
 
 # 3b. Skill registry (starter template)
 write_file "$PROJECT_DIR/.claude/clp/skill-registry.json" '{
-  "clp_version": "1.0",
+  "version": "1.0",
   "skills": [
     {
-      "id": "example-auth",
+      "name": "example-auth",
       "triggers": ["auth", "oauth", "login", "jwt", "token", "session"],
       "files": ["docs/specs/auth-spec.md"],
       "estimated_tokens": 1200,
@@ -201,7 +201,7 @@ write_file "$PROJECT_DIR/.claude/clp/skill-registry.json" '{
       "description": "Authentication and authorization specifications"
     },
     {
-      "id": "example-testing",
+      "name": "example-testing",
       "triggers": ["test", "spec", "jest", "vitest", "coverage", "mock"],
       "files": ["docs/guides/testing.md"],
       "estimated_tokens": 1500,
@@ -237,13 +237,13 @@ CONTEXT=""
 
 # Load CLP zone summary
 if [ -f "$CLP_DIR/manifest.json" ]; then
-  ZONE_SUMMARY=$(jq -r "\"CLP v\" + .clp_version + \" | Zones: kernel(\" + (.zones.kernel.max_tokens|tostring) + \") active(\" + (.zones.active.max_tokens|tostring) + \") working(\" + (.zones.working.max_tokens|tostring) + \") buffer(\" + (.zones.buffer.max_tokens|tostring) + \")\"" "$CLP_DIR/manifest.json" 2>/dev/null || echo "")
+  ZONE_SUMMARY=$(jq -r "\"CLP v\" + .version + \" | Zones: kernel(\" + (.zones.kernel.budget_tokens|tostring) + \") active(\" + (.zones.active.budget_tokens|tostring) + \") working(\" + (.zones.working.budget_tokens|tostring) + \") buffer(\" + (.zones.buffer.budget_tokens|tostring) + \")\"" "$CLP_DIR/manifest.json" 2>/dev/null || echo "")
   [ -n "$ZONE_SUMMARY" ] && CONTEXT="## CLP Runtime\n$ZONE_SUMMARY"
 fi
 
 # Load skill registry index
 if [ -f "$CLP_DIR/skill-registry.json" ]; then
-  SKILLS=$(jq -r ".skills[] | \"- \" + .id + \": \" + .description" "$CLP_DIR/skill-registry.json" 2>/dev/null || echo "")
+  SKILLS=$(jq -r ".skills[] | \"- \" + .name + \": \" + .description" "$CLP_DIR/skill-registry.json" 2>/dev/null || echo "")
   [ -n "$SKILLS" ] && CONTEXT="$CONTEXT\n\n## Available Skills (demand-loaded)\n$SKILLS\nSkills load when your prompt matches triggers. Do NOT pre-load."
 fi
 
@@ -294,7 +294,7 @@ COUNT=0
 MAX=$(jq -r ".max_concurrent_skills // 3" "$REGISTRY" 2>/dev/null)
 
 while IFS= read -r skill; do
-  SID=$(echo "$skill" | jq -r ".id")
+  SID=$(echo "$skill" | jq -r ".name")
   for trigger in $(echo "$skill" | jq -r ".triggers[]"); do
     if echo "$MSG_LOWER" | grep -qiF "$trigger"; then
       FILES=$(echo "$skill" | jq -r ".files | join(\", \")")
@@ -338,7 +338,7 @@ fi
 
 # Write manifest
 MANIFEST=$(jq -n \
-  --arg clp_version "1.0" \
+  --arg version "1.0" \
   --arg session_id "$SESSION_ID" \
   --arg timestamp "$TS" \
   --arg trigger "$TRIGGER" \
@@ -346,7 +346,7 @@ MANIFEST=$(jq -n \
   --argjson user_msgs "$USER_MSGS" \
   --argjson mod_files "$MOD_FILES" \
   '"'"'{
-    clp_version: $clp_version,
+    version: $version,
     session_id: $session_id,
     timestamp: $timestamp,
     trigger: $trigger,

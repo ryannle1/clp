@@ -23,7 +23,7 @@ fi
 
 # Write manifest
 MANIFEST=$(jq -n \
-  --arg clp_version "1.0" \
+  --arg version "1.0" \
   --arg session_id "$SESSION_ID" \
   --arg timestamp "$TS" \
   --arg trigger "$TRIGGER" \
@@ -31,7 +31,7 @@ MANIFEST=$(jq -n \
   --argjson user_msgs "$USER_MSGS" \
   --argjson mod_files "$MOD_FILES" \
   '{
-    clp_version: $clp_version,
+    version: $version,
     session_id: $session_id,
     timestamp: $timestamp,
     trigger: $trigger,

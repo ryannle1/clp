@@ -14,13 +14,13 @@ CONTEXT=""
 
 # Load CLP zone summary
 if [ -f "$CLP_DIR/manifest.json" ]; then
-  ZONE_SUMMARY=$(jq -r "\"CLP v\" + .clp_version + \" | Zones: kernel(\" + (.zones.kernel.max_tokens|tostring) + \") active(\" + (.zones.active.max_tokens|tostring) + \") working(\" + (.zones.working.max_tokens|tostring) + \") buffer(\" + (.zones.buffer.max_tokens|tostring) + \")\"" "$CLP_DIR/manifest.json" 2>/dev/null || echo "")
+  ZONE_SUMMARY=$(jq -r "\"CLP v\" + .version + \" | Zones: kernel(\" + (.zones.kernel.budget_tokens|tostring) + \") active(\" + (.zones.active.budget_tokens|tostring) + \") working(\" + (.zones.working.budget_tokens|tostring) + \") buffer(\" + (.zones.buffer.budget_tokens|tostring) + \")\"" "$CLP_DIR/manifest.json" 2>/dev/null || echo "")
   [ -n "$ZONE_SUMMARY" ] && CONTEXT="## CLP Runtime\n$ZONE_SUMMARY"
 fi
 
 # Load skill registry index
 if [ -f "$CLP_DIR/skill-registry.json" ]; then
-  SKILLS=$(jq -r ".skills[] | \"- \" + .id + \": \" + .description" "$CLP_DIR/skill-registry.json" 2>/dev/null || echo "")
+  SKILLS=$(jq -r ".skills[] | \"- \" + .name + \": \" + .description" "$CLP_DIR/skill-registry.json" 2>/dev/null || echo "")
   [ -n "$SKILLS" ] && CONTEXT="$CONTEXT\n\n## Available Skills (demand-loaded)\n$SKILLS\nSkills load when your prompt matches triggers. Do NOT pre-load."
 fi
 

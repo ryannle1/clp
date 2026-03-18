@@ -188,7 +188,7 @@ point in time. Any Claude Code session can consume it to resume work.
 
 ```json
 {
-  "clp_version": "1.0",
+  "version": "1.0",
   "session_id": "abc123",
   "timestamp": "2026-03-17T14:30:00Z",
   "project": "/path/to/project",
@@ -269,7 +269,7 @@ point in time. Any Claude Code session can consume it to resume work.
 3. **Composable.** Multiple manifests can be merged for parallel session coordination.
    The ledger pattern from Phase 5 of the plan reads from these manifests.
 
-4. **Versioned.** The clp_version field enables forward compatibility as the
+4. **Versioned.** The version field enables forward compatibility as the
    protocol evolves.
 
 ---
@@ -313,28 +313,28 @@ It's the routing table that makes demand-loading work.
 {
   "skills": [
     {
-      "id": "auth",
+      "name": "auth",
       "triggers": ["auth", "oauth", "login", "jwt", "token", "session", "pkce"],
       "files": ["docs/specs/auth-spec.md"],
       "estimated_tokens": 1200,
       "zone": "active"
     },
     {
-      "id": "api-design",
+      "name": "api-design",
       "triggers": ["api", "endpoint", "rest", "route", "controller"],
       "files": ["docs/design/api-conventions.md"],
       "estimated_tokens": 800,
       "zone": "active"
     },
     {
-      "id": "testing",
+      "name": "testing",
       "triggers": ["test", "spec", "jest", "vitest", "coverage", "mock"],
       "files": ["docs/guides/testing.md"],
       "estimated_tokens": 1500,
       "zone": "active"
     },
     {
-      "id": "debugging",
+      "name": "debugging",
       "triggers": ["bug", "error", "fix", "debug", "stack trace", "crash"],
       "files": ["docs/guides/debugging.md"],
       "estimated_tokens": 600,

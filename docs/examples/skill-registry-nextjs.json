@@ -1,9 +1,9 @@
 {
-  "clp_version": "1.0",
+  "version": "1.0",
   "_comment": "Example skill registry for a Next.js / TypeScript project",
   "skills": [
     {
-      "id": "auth",
+      "name": "auth",
       "triggers": ["auth", "oauth", "login", "jwt", "token", "session", "pkce", "nextauth", "credential", "password"],
       "files": ["docs/specs/auth-spec.md"],
       "estimated_tokens": 1200,
@@ -11,7 +11,7 @@
       "description": "Authentication and authorization: OAuth flows, JWT handling, session management"
     },
     {
-      "id": "api",
+      "name": "api",
       "triggers": ["api", "endpoint", "rest", "route", "handler", "middleware", "controller", "request", "response"],
       "files": ["docs/design/api-conventions.md"],
       "estimated_tokens": 800,
@@ -19,7 +19,7 @@
       "description": "API design: route patterns, middleware chain, error handling, validation"
     },
     {
-      "id": "database",
+      "name": "database",
       "triggers": ["database", "db", "migration", "schema", "query", "sql", "prisma", "drizzle", "orm", "seed"],
       "files": ["docs/specs/database-spec.md"],
       "estimated_tokens": 1000,
@@ -27,7 +27,7 @@
       "description": "Database: schema design, migrations, query patterns, ORM conventions"
     },
     {
-      "id": "testing",
+      "name": "testing",
       "triggers": ["test", "spec", "jest", "vitest", "coverage", "mock", "fixture", "e2e", "playwright", "cypress"],
       "files": ["docs/guides/testing.md"],
       "estimated_tokens": 1500,
@@ -35,7 +35,7 @@
       "description": "Testing: unit tests, integration tests, e2e patterns, mock strategies"
     },
     {
-      "id": "frontend",
+      "name": "frontend",
       "triggers": ["component", "react", "hook", "state", "ui", "css", "tailwind", "style", "layout", "page"],
       "files": ["docs/design/frontend-patterns.md"],
       "estimated_tokens": 1100,
@@ -43,7 +43,7 @@
       "description": "Frontend: React patterns, component conventions, styling approach"
     },
     {
-      "id": "deployment",
+      "name": "deployment",
       "triggers": ["deploy", "ci", "cd", "pipeline", "docker", "vercel", "build", "release", "env", "environment"],
       "files": ["docs/guides/deployment.md"],
       "estimated_tokens": 900,
@@ -51,7 +51,7 @@
       "description": "Deployment: CI/CD pipeline, environment config, release process"
     },
     {
-      "id": "debugging",
+      "name": "debugging",
       "triggers": ["bug", "error", "fix", "debug", "trace", "crash", "exception", "investigate", "broken", "failing"],
       "files": ["docs/guides/debugging.md"],
       "estimated_tokens": 600,
@@ -59,7 +59,7 @@
       "description": "Debugging: investigation protocol, common error patterns, logging"
     },
     {
-      "id": "performance",
+      "name": "performance",
       "triggers": ["performance", "slow", "optimize", "cache", "lazy", "bundle", "lighthouse", "speed", "memory"],
       "files": ["docs/guides/performance.md"],
       "estimated_tokens": 700,

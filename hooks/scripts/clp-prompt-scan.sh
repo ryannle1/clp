@@ -16,7 +16,7 @@ COUNT=0
 MAX=$(jq -r ".max_concurrent_skills // 3" "$REGISTRY" 2>/dev/null)
 
 while IFS= read -r skill; do
-  SID=$(echo "$skill" | jq -r ".id")
+  SID=$(echo "$skill" | jq -r ".name")
   for trigger in $(echo "$skill" | jq -r ".triggers[]"); do
     if echo "$MSG_LOWER" | grep -qiF "$trigger"; then
       FILES=$(echo "$skill" | jq -r ".files | join(\", \")")

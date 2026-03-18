@@ -31,7 +31,7 @@ Write the file using this exact JSON structure:
 
 ```json
 {
-  "clp_version": "1.0",
+  "version": "1.0",
   "session_id": "[current session ID]",
   "timestamp": "[ISO 8601]",
   "trigger": "manual_checkpoint",
