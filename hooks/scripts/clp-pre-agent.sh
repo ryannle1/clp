@@ -7,9 +7,13 @@ CLP_DIR="$PROJECT_DIR/.claude/clp"
 LOG_FILE="$CLP_DIR/delegation-log.jsonl"
 
 INPUT=$(cat)
-SUBAGENT_TYPE=$(echo "$INPUT" | jq -r '.tool_input.subagent_type // "general"' 2>/dev/null || echo "general")
-DESCRIPTION=$(echo "$INPUT" | jq -r '.tool_input.description // "no description"' 2>/dev/null || echo "no description")
-PROMPT_SUMMARY=$(echo "$INPUT" | jq -r '.tool_input.prompt // "" | .[0:100]' 2>/dev/null || echo "")
+
+# Single jq call to extract all fields
+eval "$(echo "$INPUT" | jq -r '
+  "SUBAGENT_TYPE=" + (.tool_input.subagent_type // "general" | @sh) +
+  " DESCRIPTION=" + (.tool_input.description // "no description" | @sh) +
+  " PROMPT_SUMMARY=" + ((.tool_input.prompt // "")[0:100] | @sh)
+' 2>/dev/null || echo 'SUBAGENT_TYPE=general DESCRIPTION="no description" PROMPT_SUMMARY=""')"
 
 # Check if delegation logging is enabled (default true)
 LOGGING=true

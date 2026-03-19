@@ -49,7 +49,7 @@ elif echo "$MSG_LOWER" | grep -qwE 'find|explain' || echo "$MSG_LOWER" | grep -q
   MAIN_CTX="Receive and synthesize subagent findings"
   EST_BUDGET="~5K working zone"
 # Review patterns
-elif echo "$MSG_LOWER" | grep -qwE 'review|PR' || echo "$MSG_LOWER" | grep -qF 'look at' || echo "$MSG_LOWER" | grep -qE 'check .* code'; then
+elif echo "$MSG_LOWER" | grep -qwE 'review|pr' || echo "$MSG_LOWER" | grep -qF 'look at' || echo "$MSG_LOWER" | grep -qE 'check .* code'; then
   TASK_TYPE="review"
   DELEGATION="Delegate to review subagent"
   MAIN_CTX="Synthesize review findings"
@@ -57,7 +57,8 @@ elif echo "$MSG_LOWER" | grep -qwE 'review|PR' || echo "$MSG_LOWER" | grep -qF '
 fi
 
 if [ -n "$TASK_TYPE" ]; then
-  CTX="CLP Route: ${TASK_TYPE}\nDelegation: ${DELEGATION}\nMain context: ${MAIN_CTX}\nEstimated budget: ${EST_BUDGET}"
-  printf '%s' "$CTX" | jq -Rs '{hookSpecificOutput:{additionalContext:.}}'
+  printf 'CLP Route: %s\nDelegation: %s\nMain context: %s\nEstimated budget: %s' \
+    "$TASK_TYPE" "$DELEGATION" "$MAIN_CTX" "$EST_BUDGET" | \
+    jq -Rs '{hookSpecificOutput:{additionalContext:.}}'
 fi
 exit 0

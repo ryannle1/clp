@@ -6,18 +6,17 @@ PROJECT_DIR="${CLAUDE_PROJECT_DIR:-.}"
 CLP_DIR="$PROJECT_DIR/.claude/clp"
 
 INPUT=$(cat)
-FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty' 2>/dev/null || echo "")
+
+# Single jq call to extract all fields
+read -r FILE_PATH OFFSET LIMIT < <(echo "$INPUT" | jq -r '[.tool_input.file_path // "", .tool_input.offset // "", .tool_input.limit // ""] | @tsv' 2>/dev/null || echo "")
 [ -z "$FILE_PATH" ] && exit 0
 
-OFFSET=$(echo "$INPUT" | jq -r '.tool_input.offset // empty' 2>/dev/null || echo "")
-LIMIT=$(echo "$INPUT" | jq -r '.tool_input.limit // empty' 2>/dev/null || echo "")
-
 # If line range is already specified, allow silently
-[ -n "$OFFSET" ] || [ -n "$LIMIT" ] && exit 0
+if [ -n "$OFFSET" ] || [ -n "$LIMIT" ]; then exit 0; fi
 
-# Check file exists and get line count
+# Check file exists and get line count (bounded to avoid reading huge files)
 [ ! -f "$FILE_PATH" ] && exit 0
-LINE_COUNT=$(wc -l < "$FILE_PATH" 2>/dev/null | tr -d ' ')
+LINE_COUNT=$(head -n 1001 "$FILE_PATH" 2>/dev/null | wc -l | tr -d ' ')
 
 # Read threshold from manifest (default 300)
 THRESHOLD=300
