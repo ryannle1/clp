@@ -10,7 +10,6 @@
   "homepage": "https://github.com/ryannle1/clp#readme",
   "license": "MIT",
   "keywords": ["context-management", "token-budget", "handoff", "compaction", "skills"],
-  "hooks": "hooks/hooks.json",
   "rules": [
     "rules/clp-tool-rules.md"
   ]
