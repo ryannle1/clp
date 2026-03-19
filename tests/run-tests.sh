@@ -107,7 +107,7 @@ if command -v jq &>/dev/null; then
     [ -f "$HOOKS_FILE" ] && pass "hooks config file exists at $HOOKS_PATH" || fail "hooks config file missing at $HOOKS_PATH"
     if [ -f "$HOOKS_FILE" ]; then
       HOOK_COUNT=$(jq '.hooks | keys | length' "$HOOKS_FILE" 2>/dev/null)
-      [ "$HOOK_COUNT" -ge 4 ] && pass "Hooks config declares $HOOK_COUNT hook events (≥4)" || fail "Hooks config declares only $HOOK_COUNT hook events (need ≥4)"
+      [ "$HOOK_COUNT" -ge 6 ] && pass "Hooks config declares $HOOK_COUNT hook events (≥6)" || fail "Hooks config declares only $HOOK_COUNT hook events (need ≥6)"
     fi
   fi
 
@@ -125,7 +125,7 @@ for skill_dir in clp-status clp-checkpoint clp-handoff clp-doctor clp-plan clp-r
 done
 
 section "4. Hook Scripts"
-for hook in clp-session-start clp-prompt-scan clp-pre-compact clp-session-end clp-statusline; do
+for hook in clp-session-start clp-prompt-scan clp-pre-compact clp-session-end clp-statusline clp-pre-read clp-pre-bash clp-post-tool-warn clp-pre-glob clp-pre-agent clp-route; do
   assert_file_exists "hooks/scripts/$hook.sh"
   assert_executable "hooks/scripts/$hook.sh"
 
@@ -139,11 +139,12 @@ for hook in clp-session-start clp-prompt-scan clp-pre-compact clp-session-end cl
 done
 
 section "5. Rules"
-assert_file_exists "rules/clp-context-rules.md"
-assert_file_contains "rules/clp-context-rules.md" "<clp_protocol"
-assert_file_contains "rules/clp-context-rules.md" "<zone_awareness>"
-assert_file_contains "rules/clp-context-rules.md" "<token_discipline>"
-assert_file_contains "rules/clp-context-rules.md" "<handoff_protocol>"
+assert_file_exists "rules/clp-tool-rules.md"
+assert_file_contains "rules/clp-tool-rules.md" "<clp_protocol"
+assert_file_contains "rules/clp-tool-rules.md" "<zone_awareness>"
+assert_file_contains "rules/clp-tool-rules.md" "<tool_optimization>"
+assert_file_contains "rules/clp-tool-rules.md" "<handoff_protocol>"
+assert_file_contains "rules/clp-tool-rules.md" "<skill_loading>"
 
 section "6. Documentation"
 assert_file_exists "docs/CLP-SPECIFICATION.md"
@@ -204,6 +205,94 @@ REGISTRY
   unset CLAUDE_PROJECT_DIR
 else
   skip "Hook functional tests (jq not installed)"
+fi
+
+section "8. v2.0 Hook Functional Tests"
+if command -v jq &>/dev/null; then
+  TEMP_DIR=$(mktemp -d)
+  mkdir -p "$TEMP_DIR/.claude/clp"
+  echo '{"tool_optimization":{"read_line_threshold":10,"output_trim_threshold":100}}' > "$TEMP_DIR/.claude/clp/manifest.json"
+  export CLAUDE_PROJECT_DIR="$TEMP_DIR"
+
+  info "Testing Pre-Read hook..."
+  seq 1 50 > "$TEMP_DIR/big.txt"
+  PR_OUT=$(echo "{\"tool_input\":{\"file_path\":\"$TEMP_DIR/big.txt\"}}" | bash "$REPO_ROOT/hooks/scripts/clp-pre-read.sh" 2>/dev/null || echo "")
+  echo "$PR_OUT" | grep -q "CLP" && pass "Pre-Read warns on large file" || fail "Pre-Read silent on large file"
+
+  seq 1 5 > "$TEMP_DIR/small.txt"
+  PR_SMALL=$(echo "{\"tool_input\":{\"file_path\":\"$TEMP_DIR/small.txt\"}}" | bash "$REPO_ROOT/hooks/scripts/clp-pre-read.sh" 2>/dev/null || echo "")
+  [ -z "$PR_SMALL" ] && pass "Pre-Read silent on small file" || fail "Pre-Read warned on small file"
+
+  PR_RANGE=$(echo "{\"tool_input\":{\"file_path\":\"$TEMP_DIR/big.txt\",\"offset\":1,\"limit\":10}}" | bash "$REPO_ROOT/hooks/scripts/clp-pre-read.sh" 2>/dev/null || echo "")
+  [ -z "$PR_RANGE" ] && pass "Pre-Read silent when line range specified" || fail "Pre-Read warned despite line range"
+
+  info "Testing Pre-Bash hook..."
+  PB_CAT=$(echo '{"tool_input":{"command":"cat /etc/hosts"}}' | bash "$REPO_ROOT/hooks/scripts/clp-pre-bash.sh" 2>/dev/null || echo "")
+  echo "$PB_CAT" | grep -q "CLP" && pass "Pre-Bash warns on unbounded cat" || fail "Pre-Bash silent on unbounded cat"
+
+  PB_OK=$(echo '{"tool_input":{"command":"cat /etc/hosts | head -5"}}' | bash "$REPO_ROOT/hooks/scripts/clp-pre-bash.sh" 2>/dev/null || echo "")
+  [ -z "$PB_OK" ] && pass "Pre-Bash silent on bounded cat" || fail "Pre-Bash warned on bounded cat"
+
+  info "Testing Post-Tool warning hook..."
+  BIG_OUT=$(python3 -c "print('x' * 500)" 2>/dev/null || printf '%500s' '')
+  PT_WARN=$(echo "{\"tool_output\":\"$BIG_OUT\"}" | bash "$REPO_ROOT/hooks/scripts/clp-post-tool-warn.sh" 2>/dev/null || echo "")
+  echo "$PT_WARN" | grep -q "CLP" && pass "Post-Tool warns on large output" || fail "Post-Tool silent on large output"
+
+  PT_OK=$(echo '{"tool_output":"small"}' | bash "$REPO_ROOT/hooks/scripts/clp-post-tool-warn.sh" 2>/dev/null || echo "")
+  [ -z "$PT_OK" ] && pass "Post-Tool silent on small output" || fail "Post-Tool warned on small output"
+
+  info "Testing Pre-Glob hook..."
+  PG_BROAD=$(echo '{"tool_input":{"pattern":"**/*"}}' | bash "$REPO_ROOT/hooks/scripts/clp-pre-glob.sh" 2>/dev/null || echo "")
+  echo "$PG_BROAD" | grep -q "CLP" && pass "Pre-Glob warns on broad pattern" || fail "Pre-Glob silent on broad pattern"
+
+  PG_OK=$(echo '{"tool_input":{"pattern":"**/*.ts"}}' | bash "$REPO_ROOT/hooks/scripts/clp-pre-glob.sh" 2>/dev/null || echo "")
+  [ -z "$PG_OK" ] && pass "Pre-Glob silent on specific pattern" || fail "Pre-Glob warned on specific pattern"
+
+  info "Testing Pre-Agent hook..."
+  echo '{"tool_input":{"subagent_type":"Explore","description":"test","prompt":"test prompt"}}' | bash "$REPO_ROOT/hooks/scripts/clp-pre-agent.sh" 2>/dev/null
+  [ -f "$TEMP_DIR/.claude/clp/delegation-log.jsonl" ] && pass "Pre-Agent creates delegation log" || fail "Pre-Agent missing delegation log"
+  # Validate JSONL line-by-line (jq empty only validates single JSON doc)
+  if [ -f "$TEMP_DIR/.claude/clp/delegation-log.jsonl" ]; then
+    JSONL_VALID=true
+    while IFS= read -r line; do
+      echo "$line" | jq empty 2>/dev/null || JSONL_VALID=false
+    done < "$TEMP_DIR/.claude/clp/delegation-log.jsonl"
+    [ "$JSONL_VALID" = "true" ] && pass "Delegation log is valid JSONL" || fail "Delegation log invalid"
+  fi
+
+  info "Testing Task Router..."
+  TR_DEBUG=$(echo '{"user_message":"fix the auth bug"}' | bash "$REPO_ROOT/hooks/scripts/clp-route.sh" 2>/dev/null || echo "")
+  echo "$TR_DEBUG" | grep -q "debug" && pass "Router classifies debug task" || fail "Router missed debug task"
+
+  TR_IMPL=$(echo '{"user_message":"add a new settings page"}' | bash "$REPO_ROOT/hooks/scripts/clp-route.sh" 2>/dev/null || echo "")
+  echo "$TR_IMPL" | grep -q "implement" && pass "Router classifies implement task" || fail "Router missed implement task"
+
+  TR_REFACTOR=$(echo '{"user_message":"refactor the auth module"}' | bash "$REPO_ROOT/hooks/scripts/clp-route.sh" 2>/dev/null || echo "")
+  echo "$TR_REFACTOR" | grep -q "refactor" && pass "Router classifies refactor task" || fail "Router missed refactor task"
+
+  TR_EXPLORE=$(echo '{"user_message":"how does the login flow work"}' | bash "$REPO_ROOT/hooks/scripts/clp-route.sh" 2>/dev/null || echo "")
+  echo "$TR_EXPLORE" | grep -q "explore" && pass "Router classifies explore task" || fail "Router missed explore task"
+
+  TR_REVIEW=$(echo '{"user_message":"review the PR changes"}' | bash "$REPO_ROOT/hooks/scripts/clp-route.sh" 2>/dev/null || echo "")
+  echo "$TR_REVIEW" | grep -q "review" && pass "Router classifies review task" || fail "Router missed review task"
+
+  TR_NONE=$(echo '{"user_message":"hello world"}' | bash "$REPO_ROOT/hooks/scripts/clp-route.sh" 2>/dev/null || echo "")
+  [ -z "$TR_NONE" ] && pass "Router silent on generic prompt" || fail "Router matched generic prompt"
+
+  # Word boundary test: "prefix" should not match "fix"
+  TR_BOUND=$(echo '{"user_message":"add a prefix to names"}' | bash "$REPO_ROOT/hooks/scripts/clp-route.sh" 2>/dev/null || echo "")
+  echo "$TR_BOUND" | grep -q "debug" && fail "Router false-matched 'prefix' as debug" || pass "Router respects word boundaries"
+
+  # Test routing disabled via manifest
+  echo '{"tool_optimization":{"routing_enabled":false}}' > "$TEMP_DIR/.claude/clp/manifest.json"
+  TR_DISABLED=$(echo '{"user_message":"fix a bug"}' | bash "$REPO_ROOT/hooks/scripts/clp-route.sh" 2>/dev/null || echo "")
+  [ -z "$TR_DISABLED" ] && pass "Router silent when disabled" || fail "Router ran despite being disabled"
+
+  # Restore manifest for remaining tests
+  echo '{"tool_optimization":{"read_line_threshold":10,"output_trim_threshold":100}}' > "$TEMP_DIR/.claude/clp/manifest.json"
+
+  rm -rf "$TEMP_DIR"
+  unset CLAUDE_PROJECT_DIR
 fi
 
 # ════════════════════════════════════════════════════════════════

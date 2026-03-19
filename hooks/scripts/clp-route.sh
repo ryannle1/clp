@@ -7,7 +7,7 @@ CLP_DIR="$PROJECT_DIR/.claude/clp"
 
 # Check if routing is enabled
 if [ -f "$CLP_DIR/manifest.json" ]; then
-  ENABLED=$(jq -r '.tool_optimization.routing_enabled // true' "$CLP_DIR/manifest.json" 2>/dev/null || echo "true")
+  ENABLED=$(jq -r 'if .tool_optimization.routing_enabled == false then "false" else "true" end' "$CLP_DIR/manifest.json" 2>/dev/null || echo "true")
   [ "$ENABLED" = "false" ] && exit 0
 fi
 
